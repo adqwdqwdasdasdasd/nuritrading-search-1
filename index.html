@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>노션 검색</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔍 노션 데이터 검색</h2>
+  <input type="text" id="searchInput" placeholder="검색어 입력..." />
+  <table id="resultsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>품목</th>
+        <th>원산지</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const table = document.getElementById('resultsTable');
+    const tbody = table.querySelector('tbody');
+
+    input.addEventListener('input', async () => {
+      const query = input.value.trim();
+      if (query.length === 0) {
+        table.style.display = 'none';
+        tbody.innerHTML = '';
+        return;
+      }
+
+      const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      const rows = data.results.map(page => {
+        const props = page.properties;
+        const item = props['품목']?.rich_text?.[0]?.plain_text || '';
+        const origin = props['원산지']?.rich_text?.[0]?.plain_text || '';
+        return `<tr><td>${item}</td><td>${origin}</td></tr>`;
+      }).join('');
+
+      tbody.innerHTML = rows;
+      table.style.display = data.results.length > 0 ? 'table' : 'none';
+    });
+  </script>
+</body>
+</html>
