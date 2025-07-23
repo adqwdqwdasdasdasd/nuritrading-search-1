@@ -1,44 +1,46 @@
 const express = require('express');
+const cors = require('cors');        // ① cors 추가
 const axios = require('axios');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3000;
-
+app.use(cors());                    // ② 모든 도메인 허용
+app.use(express.static('public'));
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+
+// ... 이하 기존 코드 ...
+
 
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
   try {
     const response = await axios.post(
-      `https://api.notion.com/v1/databases/${process.env.238bffabc0a28078a7bbeeb3df99429b}/query`,
+      `https://api.notion.com/v1/databases/${process.env.NOTION_DATABASE_ID}/query`,
       {
         filter: {
           or: [
             {
               property: '품목',
               rich_text: {
-                contains: q,
-              },
+                contains: q
+              }
             },
             {
               property: '원산지',
               rich_text: {
-                contains: q,
-              },
-            },
-          ],
-        },
+                contains: q
+              }
+            }
+          ]
+        }
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.NOTION_API_KEY}`,
           'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28',
-        },
+          'Notion-Version': '2022-06-28'
+        }
       }
     );
 
@@ -50,5 +52,5 @@ app.get('/search', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ 서버가 http://localhost:${PORT} 에서 실행 중`);
+  console.log(`서버가 http://localhost:${PORT} 에서 실행 중`);
 });
